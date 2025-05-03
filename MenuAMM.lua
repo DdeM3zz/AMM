@@ -1,6 +1,6 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
 -- Features: Teleportation, Kill All, Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player
--- GUI: Draggable, Black/Gray/White theme, tooltips for Alt/Ctrl, Made by: DdeM3zz
+-- GUI: Draggable, Modern design with gradients, rounded corners, hover effects, text-based hints, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
@@ -20,38 +20,77 @@ ScreenGui.ResetOnSpawn = false
 
 -- Main Frame (Draggable)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 500) -- Increased height for new elements
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -250)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark Gray
-MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- White Border
+MainFrame.Size = UDim2.new(0, 300, 0, 480)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -240)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark Gray base
+MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 MainFrame.Active = true
 MainFrame.Draggable = true
 
+-- Gradient for MainFrame
+local MainGradient = Instance.new("UIGradient")
+MainGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+}
+MainGradient.Rotation = 45
+MainGradient.Parent = MainFrame
+
+-- Rounded Corners for MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
 -- Title Bar
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, 0, 0, 30)
-TitleLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Black
+TitleLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 TitleLabel.Text = "AMM Admin Panel"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- White
+TitleLabel.TextColor3 = Color3.fromRGB(0, 200, 255) -- Neon Blue
 TitleLabel.TextSize = 18
 TitleLabel.Font = Enum.Font.SourceSansBold
 TitleLabel.Parent = MainFrame
+
+-- Rounded Corners for TitleLabel
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleLabel
 
 -- Functions Frame
 local FunctionsFrame = Instance.new("Frame")
 FunctionsFrame.Size = UDim2.new(1, -10, 1, -40)
 FunctionsFrame.Position = UDim2.new(0, 5, 0, 35)
-FunctionsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Gray
+FunctionsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Gray base
+FunctionsFrame.BorderSizePixel = 0
 FunctionsFrame.Parent = MainFrame
+
+-- Gradient for FunctionsFrame
+local FunctionsGradient = Instance.new("UIGradient")
+FunctionsGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
+}
+FunctionsGradient.Rotation = 45
+FunctionsGradient.Parent = FunctionsFrame
+
+-- Rounded Corners for FunctionsFrame
+local FunctionsCorner = Instance.new("UICorner")
+FunctionsCorner.CornerRadius = UDim.new(0, 8)
+FunctionsCorner.Parent = FunctionsFrame
 
 -- Scrolling Frame for Player List
 local PlayerListFrame = Instance.new("ScrollingFrame")
-PlayerListFrame.Size = UDim2.new(0.5, -10, 0.5, -10)
+PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 360)
 PlayerListFrame.Position = UDim2.new(0, 5, 0, 5)
 PlayerListFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 PlayerListFrame.ScrollBarThickness = 5
 PlayerListFrame.Parent = FunctionsFrame
+
+-- Rounded Corners for PlayerListFrame
+local PlayerListCorner = Instance.new("UICorner")
+PlayerListCorner.CornerRadius = UDim.new(0, 6)
+PlayerListCorner.Parent = PlayerListFrame
 
 -- UI List Layout for Player Buttons
 local UIListLayout = Instance.new("UIListLayout")
@@ -59,28 +98,33 @@ UIListLayout.Parent = PlayerListFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
--- Hints Label
+-- Hints Label (Text-Based)
 local HintsLabel = Instance.new("TextLabel")
 HintsLabel.Size = UDim2.new(0.5, -10, 0, 60)
-HintsLabel.Position = UDim2.new(0.5, 5, 0.5, 180)
-HintsLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-HintsLabel.Text = "Hints:\nAlt: Teleport behind closest player\nCtrl + Left Click: Teleport to mouse"
-HintsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-HintsLabel.TextSize = 12
+HintsLabel.Position = UDim2.new(0.5, 5, 0, 390)
+HintsLabel.BackgroundTransparency = 1 -- Transparent
+HintsLabel.Text = "Alt: Teleport behind closest player\nCtrl + Left Click: Teleport to mouse"
+HintsLabel.TextColor3 = Color3.fromRGB(200, 200, 200) -- Light Gray
+HintsLabel.TextSize = 10
 HintsLabel.TextWrapped = true
-HintsLabel.Font = Enum.Font.SourceSans
+HintsLabel.Font = Enum.Font.SourceSansItalic
 HintsLabel.Parent = FunctionsFrame
 
 -- Made by Label
 local MadeByLabel = Instance.new("TextLabel")
 MadeByLabel.Size = UDim2.new(1, -10, 0, 20)
 MadeByLabel.Position = UDim2.new(0, 5, 1, -25)
-MadeByLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MadeByLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MadeByLabel.Text = "Made by: DdeM3zz"
-MadeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+MadeByLabel.TextColor3 = Color3.fromRGB(220, 220, 220) -- Brighter White
 MadeByLabel.TextSize = 12
 MadeByLabel.Font = Enum.Font.SourceSans
 MadeByLabel.Parent = MainFrame
+
+-- Rounded Corners for MadeByLabel
+local MadeByCorner = Instance.new("UICorner")
+MadeByCorner.CornerRadius = UDim.new(0, 6)
+MadeByCorner.Parent = MadeByLabel
 
 -- Button Creation Function
 local function CreateButton(name, parent, size, position, text, callback)
@@ -88,13 +132,27 @@ local function CreateButton(name, parent, size, position, text, callback)
     Button.Name = name
     Button.Size = size
     Button.Position = position
-    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60) -- Light Gray
+    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Darker Gray
     Button.Text = text
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255) -- White
+    Button.TextColor3 = Color3.fromRGB(220, 220, 220) -- Brighter White
     Button.TextSize = 14
     Button.Font = Enum.Font.SourceSans
     Button.Parent = parent
     Button.MouseButton1Click:Connect(callback)
+
+    -- Rounded Corners for Button
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.Parent = Button
+
+    -- Hover Effect
+    Button.MouseEnter:Connect(function()
+        Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70) -- Lighter Gray
+    end)
+    Button.MouseLeave:Connect(function()
+        Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Original Dark Gray
+    end)
+
     return Button
 end
 
@@ -280,18 +338,24 @@ local function UpdatePlayerList()
         if player ~= LocalPlayer then
             local PlayerButton = Instance.new("TextButton")
             PlayerButton.Size = UDim2.new(1, -10, 0, 30)
-            PlayerButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            PlayerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
             PlayerButton.Text = player.Name
-            PlayerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            PlayerButton.TextColor3 = Color3.fromRGB(220, 220, 220)
             PlayerButton.TextSize = 14
             PlayerButton.Font = Enum.Font.SourceSans
             PlayerButton.Parent = PlayerListFrame
+            local ButtonCorner = Instance.new("UICorner")
+            ButtonCorner.CornerRadius = UDim.new(0, 6)
+            ButtonCorner.Parent = PlayerButton
             PlayerButton.MouseButton1Click:Connect(function()
                 local ActionFrame = Instance.new("Frame")
-                ActionFrame.Size = UDim2.new(0.5, -10, 0.5, -10)
-                ActionFrame.Position = UDim2.new(0.5, 5, 0, 5)
+                ActionFrame.Size = UDim2.new(0.5, -10, 0, 120)
+                ActionFrame.Position = UDim2.new(0.5, 5, 0, 245)
                 ActionFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
                 ActionFrame.Parent = FunctionsFrame
+                local ActionCorner = Instance.new("UICorner")
+                ActionCorner.CornerRadius = UDim.new(0, 6)
+                ActionCorner.Parent = ActionFrame
 
                 CreateButton("TeleportBehind", ActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 5), "Teleport Behind", function()
                     TeleportBehind(player)
@@ -310,25 +374,30 @@ local function UpdatePlayerList()
     PlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
 end
 
--- GUI Buttons and Inputs
-CreateButton("KillAll", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 5), "Kill All", KillAll)
-CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 40), "Toggle Flight", ToggleFlight)
-CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 75), "Toggle Noclip", ToggleNoclip)
-CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 110), "Toggle ESP", ToggleESP)
-CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 145), "Toggle God Mode", ToggleGodMode)
+-- GUI Buttons and Inputs (Top-Right)
+CreateButton("KillAll", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 5), "Kill All", KillAll)
+CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 40), "Toggle Flight", ToggleFlight)
+CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 75), "Toggle Noclip", ToggleNoclip)
+CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 110), "Toggle ESP", ToggleESP)
+CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 145), "Toggle God Mode", ToggleGodMode)
 
 -- Speed Hack Input
 local SpeedInput = Instance.new("TextBox")
 SpeedInput.Size = UDim2.new(0.5, -10, 0, 30)
-SpeedInput.Position = UDim2.new(0.5, 5, 0.5, 250)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpeedInput.Position = UDim2.new(0.5, 5, 0, 180)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 SpeedInput.Text = "16" -- Default walk speed
-SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedInput.TextColor3 = Color3.fromRGB(220, 220, 220)
 SpeedInput.TextSize = 14
 SpeedInput.Font = Enum.Font.SourceSans
 SpeedInput.Parent = FunctionsFrame
 
-CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 285), "Apply Speed", function()
+-- Rounded Corners for SpeedInput
+local SpeedInputCorner = Instance.new("UICorner")
+SpeedInputCorner.CornerRadius = UDim.new(0, 6)
+SpeedInputCorner.Parent = SpeedInput
+
+CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 215), "Apply Speed", function()
     ApplySpeed(SpeedInput.Text)
 end)
 
@@ -381,7 +450,7 @@ local function UpdateFlight()
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
             moveDirection = moveDirection + Vector3.new(0, 1, 0)
         end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+        if UserInputService:IsKeyCodeDown(Enum.KeyCode.LeftControl) then
             moveDirection = moveDirection - Vector3.new(0, 1, 0)
         end
 
