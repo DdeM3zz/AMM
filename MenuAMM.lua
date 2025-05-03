@@ -1,6 +1,6 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
 -- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn
--- GUI: Wider, black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu, minimize/maximize, optimized layout, no hints, Made by: DdeM3zz
+-- GUI: Larger (500x600), black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu, minimize/maximize, MadeByLabel visible when minimized, no hints, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
@@ -21,8 +21,8 @@ ScreenGui.ResetOnSpawn = false
 
 -- Main Frame (Draggable)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 500)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+MainFrame.Size = UDim2.new(0, 500, 0, 600) -- Larger size
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -103,7 +103,7 @@ FunctionsCorner.Parent = FunctionsFrame
 
 -- Scrolling Frame for Player List
 local PlayerListFrame = Instance.new("ScrollingFrame")
-PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 380)
+PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 460) -- Taller
 PlayerListFrame.Position = UDim2.new(0, 5, 0, 5)
 PlayerListFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 PlayerListFrame.ScrollBarThickness = 5
@@ -122,8 +122,8 @@ UIListLayout.Padding = UDim.new(0, 5)
 
 -- Notification Label for Kick and Kill All Feedback
 local NotificationLabel = Instance.new("TextLabel")
-NotificationLabel.Size = UDim2.new(0.5, -10, 0, 30)
-NotificationLabel.Position = UDim2.new(0.5, 5, 0, 400) -- Adjusted position
+NotificationLabel.Size = UDim2.new(0.5, -10, 0, 35) -- Taller
+NotificationLabel.Position = UDim2.new(0.5, 5, 0, 480) -- Adjusted position
 NotificationLabel.BackgroundTransparency = 1
 NotificationLabel.Text = ""
 NotificationLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -131,6 +131,22 @@ NotificationLabel.TextSize = 12
 NotificationLabel.Font = Enum.Font.SourceSans
 NotificationLabel.Parent = FunctionsFrame
 NotificationLabel.Visible = false
+
+-- Made by Label
+local MadeByLabel = Instance.new("TextLabel")
+MadeByLabel.Size = UDim2.new(1, -10, 0, 30) -- Taller
+MadeByLabel.Position = UDim2.new(0, 5, 1, -35) -- Bottom when maximized
+MadeByLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
+MadeByLabel.Text = "Made by: DdeM3zz"
+MadeByLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
+MadeByLabel.TextSize = 14
+MadeByLabel.Font = Enum.Font.SourceSans
+MadeByLabel.Parent = MainFrame
+
+-- Rounded Corners for MadeByLabel
+local MadeByCorner = Instance.new("UICorner")
+MadeByCorner.CornerRadius = UDim.new(0, 8)
+MadeByCorner.Parent = MadeByLabel
 
 -- Button Creation Function
 local function CreateButton(name, parent, size, position, text, callback)
@@ -175,17 +191,17 @@ end
 local function ToggleMinimize()
     Minimized = not Minimized
     if Minimized then
-        MainFrame.Size = UDim2.new(0, 400, 0, 40)
+        MainFrame.Size = UDim2.new(0, 500, 0, 40) -- Match new width
         FunctionsFrame.Visible = false
-        MadeByLabel.Visible = false
         MinimizeButton.Text = "+"
         MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
+        MadeByLabel.Position = UDim2.new(0, 5, 0, 5) -- Visible below title
     else
-        MainFrame.Size = UDim2.new(0, 400, 0, 500)
+        MainFrame.Size = UDim2.new(0, 500, 0, 600) -- Larger size
         FunctionsFrame.Visible = true
-        MadeByLabel.Visible = true
         MinimizeButton.Text = "-"
         MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
+        MadeByLabel.Position = UDim2.new(0, 5, 1, -35) -- Bottom when maximized
     end
 end
 
@@ -467,7 +483,7 @@ local function UpdatePlayerList()
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             local PlayerButton = Instance.new("TextButton")
-            PlayerButton.Size = UDim2.new(1, -10, 0, 30)
+            PlayerButton.Size = UDim2.new(1, -10, 0, 35) -- Taller
             PlayerButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255) -- Blue
             PlayerButton.Text = player.Name
             PlayerButton.TextColor3 = Color3.fromRGB(0, 0, 0) -- Black
@@ -497,27 +513,27 @@ local function UpdatePlayerList()
                     -- Open new menu for selected player
                     CurrentSelectedPlayer = player
                     CurrentActionFrame = Instance.new("Frame")
-                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 130)
-                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 260)
+                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 150) -- Taller
+                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 300) -- Adjusted position
                     CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
                     CurrentActionFrame.Parent = FunctionsFrame
                     local ActionCorner = Instance.new("UICorner")
                     ActionCorner.CornerRadius = UDim.new(0, 8)
                     ActionCorner.Parent = CurrentActionFrame
 
-                    CreateButton("TeleportBehind", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 5), "Teleport Behind", function()
+                    CreateButton("TeleportBehind", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 5), "Teleport Behind", function()
                         TeleportBehind(player)
                     end)
 
-                    CreateButton("TeleportTo", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 35), "Teleport To", function()
+                    CreateButton("TeleportTo", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 40), "Teleport To", function()
                         TeleportToPlayer(player)
                     end)
 
-                    CreateButton("KillPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 65), "Kill", function()
+                    CreateButton("KillPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 75), "Kill", function()
                         KillPlayer(player)
                     end)
 
-                    CreateButton("KickPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 95), "Kick", function()
+                    CreateButton("KickPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 110), "Kick", function()
                         KickPlayer(player)
                     end)
                 end
@@ -529,21 +545,21 @@ end
 
 -- GUI Buttons and Inputs (Two Columns, Top-Right)
 -- Left Column
-CreateButton("KillAll", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 5), "Kill All", KillAll)
-CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 40), "Toggle Flight", ToggleFlight)
-CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 75), "Toggle Noclip", ToggleNoclip)
-CreateButton("ToggleInfiniteJump", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 110), "Toggle Inf Jump", ToggleInfiniteJump)
+CreateButton("KillAll", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.5, 5, 0, 5), "Kill All", KillAll)
+CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.5, 5, 0, 40), "Toggle Flight", ToggleFlight)
+CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.5, 5, 0, 75), "Toggle Noclip", ToggleNoclip)
+CreateButton("ToggleInfiniteJump", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.5, 5, 0, 110), "Toggle Inf Jump", ToggleInfiniteJump)
 
 -- Right Column
-CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 5), "Toggle ESP", ToggleESP)
-CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 40), "Toggle God Mode", ToggleGodMode)
-CreateButton("ToggleAutoRespawn", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 75), "Toggle Auto-Respawn", ToggleAutoRespawn)
-CreateButton("TeleportUp", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 110), "Teleport Up", TeleportToHighestPoint)
+CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 5), "Toggle ESP", ToggleESP)
+CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 40), "Toggle God Mode", ToggleGodMode)
+CreateButton("ToggleAutoRespawn", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 75), "Toggle Auto-Respawn", ToggleAutoRespawn)
+CreateButton("TeleportUp", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 110), "Teleport Up", TeleportToHighestPoint)
 
 -- Speed Hack Input
 local SpeedInput = Instance.new("TextBox")
-SpeedInput.Size = UDim2.new(0.5, -10, 0, 30)
-SpeedInput.Position = UDim2.new(0.5, 5, 0, 150)
+SpeedInput.Size = UDim2.new(0.5, -10, 0, 35) -- Taller
+SpeedInput.Position = UDim2.new(0.5, 5, 0, 180) -- Adjusted position
 SpeedInput.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 SpeedInput.Text = "16" -- Default walk speed
 SpeedInput.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -564,7 +580,7 @@ SpeedInputStroke.Transparency = 0.5
 SpeedInputStroke.Parent = SpeedInput
 
 -- Apply Speed Button
-CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 185), "Apply Speed", function()
+CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 220), "Apply Speed", function()
     ApplySpeed(SpeedInput.Text)
 end)
 
@@ -683,19 +699,3 @@ RunService.RenderStepped:Connect(UpdateFlight)
 -- Ensure GUI stays on top
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainFrame.ZIndex = 10
-
--- Made by Label
-local MadeByLabel = Instance.new("TextLabel")
-MadeByLabel.Size = UDim2.new(1, -10, 0, 25)
-MadeByLabel.Position = UDim2.new(0, 5, 1, -30)
-MadeByLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
-MadeByLabel.Text = "Made by: DdeM3zz"
-MadeByLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
-MadeByLabel.TextSize = 14
-MadeByLabel.Font = Enum.Font.SourceSans
-MadeByLabel.Parent = MainFrame
-
--- Rounded Corners for MadeByLabel
-local MadeByCorner = Instance.new("UICorner")
-MadeByCorner.CornerRadius = UDim.new(0, 8)
-MadeByCorner.Parent = MadeByLabel
