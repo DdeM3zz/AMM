@@ -1,12 +1,13 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation, Kill All, Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn
--- GUI: Wider, black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu, minimize/maximize, optimized layout, Made by: DdeM3zz
+-- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn
+-- GUI: Wider, black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu, minimize/maximize, optimized layout, no hints, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Local player
 local LocalPlayer = Players.LocalPlayer
@@ -119,38 +120,10 @@ UIListLayout.Parent = PlayerListFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
--- Hints Label (Text-Based)
-local HintsLabel = Instance.new("TextLabel")
-HintsLabel.Size = UDim2.new(0.5, -10, 0, 40)
-HintsLabel.Position = UDim2.new(0.5, 5, 0, 400)
-HintsLabel.BackgroundTransparency = 1
-HintsLabel.Text = "Alt: Teleport behind closest player\nCtrl + Left Click: Teleport to mouse"
-HintsLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
-HintsLabel.TextSize = 12
-HintsLabel.TextWrapped = true
-HintsLabel.Font = Enum.Font.SourceSansItalic
-HintsLabel.Parent = FunctionsFrame
-
--- Made by Label
-local MadeByLabel = Instance.new("TextLabel")
-MadeByLabel.Size = UDim2.new(1, -10, 0, 25)
-MadeByLabel.Position = UDim2.new(0, 5, 1, -30)
-MadeByLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
-MadeByLabel.Text = "Made by: DdeM3zz"
-MadeByLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
-MadeByLabel.TextSize = 14
-MadeByLabel.Font = Enum.Font.SourceSans
-MadeByLabel.Parent = MainFrame
-
--- Rounded Corners for MadeByLabel
-local MadeByCorner = Instance.new("UICorner")
-MadeByCorner.CornerRadius = UDim.new(0, 8)
-MadeByCorner.Parent = MadeByLabel
-
--- Notification Label for Kick Feedback
+-- Notification Label for Kick and Kill All Feedback
 local NotificationLabel = Instance.new("TextLabel")
 NotificationLabel.Size = UDim2.new(0.5, -10, 0, 30)
-NotificationLabel.Position = UDim2.new(0.5, 5, 0, 350)
+NotificationLabel.Position = UDim2.new(0.5, 5, 0, 400) -- Adjusted position
 NotificationLabel.BackgroundTransparency = 1
 NotificationLabel.Text = ""
 NotificationLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -259,17 +232,47 @@ local function TeleportToHighestPoint()
     end
 end
 
--- Kill All Function
+-- Kill All Function (Improved)
 local function KillAll()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.Health = 0
+    NotificationLabel.Text = "Kill All attempted"
+    NotificationLabel.Visible = true
+    local success = false
+    pcall(function()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                local humanoid = player.Character:FindFirstChild("Humanoid")
+                if humanoid then
+                    -- Attempt multiple times to bypass server sync
+                    for _ = 1, 5 do
+                        humanoid.Health = 0
+                        player.Character:BreakJoints()
+                        wait(0.1)
+                    end
+                    success = true
+                end
+                -- Try to find and fire RemoteEvents for damage
+                for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
+                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("damage") or remote.Name:lower():find("hit") or remote.Name:lower():find("kill")) then
+                        pcall(function()
+                            remote:FireServer({Target = player.Character.Humanoid, Damage = math.huge})
+                        end)
+                    end
+                end
+                for _, remote in ipairs(workspace:GetDescendants()) do
+                    if remote:IsA("RemoteEvent") and (remote.Name:lower():find("damage") or remote.Name:lower():find("hit") or remote.Name:lower():find("kill")) then
+                        pcall(function()
+                            remote:FireServer({Target = player.Character.Humanoid, Damage = math.huge})
+                        end)
+                    end
+                end
             end
-            player.Character:BreakJoints() -- Fallback to ensure kill
         end
+    end)
+    if not success then
+        NotificationLabel.Text = "Kill All failed: Server restrictions"
     end
+    wait(3)
+    NotificationLabel.Visible = false
 end
 
 -- Kill Player Function
@@ -680,3 +683,19 @@ RunService.RenderStepped:Connect(UpdateFlight)
 -- Ensure GUI stays on top
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 MainFrame.ZIndex = 10
+
+-- Made by Label
+local MadeByLabel = Instance.new("TextLabel")
+MadeByLabel.Size = UDim2.new(1, -10, 0, 25)
+MadeByLabel.Position = UDim2.new(0, 5, 1, -30)
+MadeByLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
+MadeByLabel.Text = "Made by: DdeM3zz"
+MadeByLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
+MadeByLabel.TextSize = 14
+MadeByLabel.Font = Enum.Font.SourceSans
+MadeByLabel.Parent = MainFrame
+
+-- Rounded Corners for MadeByLabel
+local MadeByCorner = Instance.new("UICorner")
+MadeByCorner.CornerRadius = UDim.new(0, 8)
+MadeByCorner.Parent = MadeByLabel
