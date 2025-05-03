@@ -1,22 +1,26 @@
 -- StandAMM Script for Xeno Executor
--- Creates a clone of the player that follows behind-left, syncing rotation and playing animation ID 132642704417515
+-- Simplified version to debug clone creation
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character
-local HumanoidRootPart
-local AnimationId = "rbxassetid://132642704417515"
+local Character = nil
+local HumanoidRootPart = nil
 local clone = nil
 
 -- Wait for character to fully load
 local function waitForCharacter()
-    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    HumanoidRootPart = Character and Character:WaitForChild("HumanoidRootPart", 5)
-    if not HumanoidRootPart then
-        warn("Failed to find HumanoidRootPart, retrying...")
-        return false
-    end
+    repeat
+        Character = LocalPlayer.Character
+        if not Character then
+            LocalPlayer.CharacterAdded:Wait()
+            Character = LocalPlayer.Character
+        end
+        HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
+        if not HumanoidRootPart then
+            wait(0.1) -- Ждем 0.1 секунды перед повторной попыткой
+        end
+    until HumanoidRootPart
     return true
 end
 
@@ -24,39 +28,34 @@ end
 local function createClone()
     if not waitForCharacter() then return nil end
     
-    local clone = Character:Clone()
-    if not clone then return nil end
+    local success, cloned = pcall(function()
+        return Character:Clone()
+    end)
     
-    clone.Name = "StandAMM_Clone"
-    clone.Parent = workspace
+    if not success or not cloned then
+        warn("Failed to clone character")
+        return nil
+    end
+    
+    cloned.Name = "StandAMM_Clone"
+    cloned.Parent = workspace
     
     -- Remove scripts to prevent clone from acting independently
-    for _, obj in pairs(clone:GetDescendants()) do
+    for _, obj in pairs(cloned:GetDescendants()) do
         if obj:IsA("Script") or obj:IsA("LocalScript") then
             obj:Destroy()
         end
     end
     
-    -- Setup humanoid
-    local humanoid = clone:WaitForChild("Humanoid", 5)
+    -- Setup humanoid (temporary disable animation for debugging)
+    local humanoid = cloned:FindFirstChild("Humanoid")
     if not humanoid then
-        clone:Destroy()
+        cloned:Destroy()
         return nil
     end
     humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
     
-    -- Load and play animation
-    local animator = humanoid:WaitForChild("Animator", 5)
-    if not animator then
-        clone:Destroy()
-        return nil
-    end
-    local animation = Instance.new("Animation")
-    animation.AnimationId = AnimationId
-    local animationTrack = animator:LoadAnimation(animation)
-    animationTrack:Play()
-    
-    return clone
+    return cloned
 end
 
 -- Initialize clone
