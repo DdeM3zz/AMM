@@ -1,11 +1,11 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation (behind players, mouse point, specific player), Kill All, Flight, Noclip
+-- Features: Teleportation (behind players, mouse point, specific player), Kill All, Flight (WASD), Noclip
 -- GUI: Draggable, Black/Gray/White theme
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
 -- Local player
@@ -103,8 +103,12 @@ end
 -- Kill All Function
 local function KillAll()
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.Health = 0
+        if player ~= LocalPlayer and player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.Health = 0
+            end
+            player.Character:BreakJoints() -- Fallback to ensure kill
         end
     end
 end
@@ -115,6 +119,7 @@ local Noclip = false
 local FlySpeed = 50
 local BodyVelocity = nil
 local BodyGyro = nil
+local NoclipConnection = nil
 
 -- Flight Function
 local function ToggleFlight()
@@ -128,12 +133,12 @@ local function ToggleFlight()
 
             BodyGyro = Instance.new("BodyGyro")
             BodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-            BodyGyro.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame
+            BodyGyro.CFrame = workspace.CurrentCamera.CFrame
             BodyGyro.Parent = LocalPlayer.Character.HumanoidRootPart
         end
     else
-        if BodyVelocity then BodyVelocity:Destroy() end
-        if BodyGyro then BodyGyro:Destroy() end
+        if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
+        if BodyGyro then BodyGyro:Destroy() BodyGyro = nil end
     end
 end
 
@@ -141,7 +146,7 @@ end
 local function ToggleNoclip()
     Noclip = not Noclip
     if Noclip then
-        game:GetService("RunService").Stepped:Connect(function()
+        NoclipConnection = RunService.Stepped:Connect(function()
             if Noclip and LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
@@ -150,13 +155,28 @@ local function ToggleNoclip()
                 end
             end
         end)
+    else
+        if NoclipConnection then
+            NoclipConnection:Disconnect()
+            NoclipConnection = nil
+        end
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
     end
 end
 
 -- Update Player List
 local function UpdatePlayerList()
-    PlayerListFrame:ClearAllChildren()
-    UIListLayout.Parent = PlayerListFrame -- Reattach UIListLayout
+    for _, child in ipairs(PlayerListFrame:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             local PlayerButton = Instance.new("TextButton")
@@ -184,6 +204,7 @@ local function UpdatePlayerList()
             end)
         end
     end
+    PlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
 end
 
 -- GUI Buttons
@@ -191,7 +212,7 @@ CreateButton("KillAll", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.
 CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 40), "Toggle Flight", ToggleFlight)
 CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 75), "Toggle Noclip", ToggleNoclip)
 
--- Input Handling
+-- Input Handling for Flight and Teleport
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed then
         if input.KeyCode == Enum.KeyCode.LeftControl then
@@ -211,29 +232,63 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if closestPlayer then
                 TeleportBehind(closestPlayer)
             end
-        elseif input.KeyCode == Enum.KeyCode.Space and Flying then
-            if BodyVelocity then
-                BodyVelocity.Velocity = (workspace.CurrentCamera.CFrame.LookVector * FlySpeed)
-            end
         elseif input.KeyCode == Enum.KeyCode.N then
             ToggleNoclip()
         end
     end
 end)
 
--- Update Player List on Player Join/Leave
-Players.PlayerAdded:Connect(UpdatePlayerList)
-Players.PlayerRemoving:Connect(UpdatePlayerList)
-UpdatePlayerList()
+-- WASD Flight Controls
+local function UpdateFlight()
+    if Flying and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local moveDirection = Vector3.new(0, 0, 0)
+        local camera = workspace.CurrentCamera
+        local lookVector = camera.CFrame.LookVector
+        local rightVector = camera.CFrame.RightVector
 
--- Flight Movement
-UserInputService.InputChanged:Connect(function(input)
-    if Flying and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveDirection = moveDirection + lookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveDirection = moveDirection - lookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveDirection = moveDirection - rightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveDirection = moveDirection + rightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveDirection = moveDirection + Vector3.new(0, 1, 0)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveDirection = moveDirection - Vector3.new(0, 1, 0)
+        end
+
+        if BodyVelocity then
+            BodyVelocity.Velocity = moveDirection * FlySpeed
+        end
         if BodyGyro then
-            BodyGyro.CFrame = workspace.CurrentCamera.CFrame
+            BodyGyro.CFrame = camera.CFrame
         end
     end
+end
+
+-- Update Player List on Player Join/Leave
+Players.PlayerAdded:Connect(function()
+    wait(1) -- Delay to ensure player data is loaded
+    UpdatePlayerList()
 end)
+Players.PlayerRemoving:Connect(UpdatePlayerList)
+
+-- Initial Player List Update with Delay
+spawn(function()
+    wait(2) -- Wait for server to load players
+    UpdatePlayerList()
+end)
+
+-- Flight Update Loop
+RunService.RenderStepped:Connect(UpdateFlight)
 
 -- Ensure GUI stays on top
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
