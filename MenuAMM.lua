@@ -1,6 +1,6 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn
--- GUI: Larger (500x600), black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu, minimize/maximize, increased button spacing, MadeByLabel hidden when minimized, no hints, Made by: DdeM3zz
+-- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn, Harass (toggleable forward/backward movement behind player)
+-- GUI: Larger (500x600), black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu with Harass, increased button spacing, MadeByLabel hidden when minimized, no hints, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
@@ -123,7 +123,7 @@ UIListLayout.Padding = UDim.new(0, 5)
 -- Notification Label for Kick and Kill All Feedback
 local NotificationLabel = Instance.new("TextLabel")
 NotificationLabel.Size = UDim2.new(0.5, -10, 0, 35)
-NotificationLabel.Position = UDim2.new(0.5, 5, 0, 500) -- Adjusted position
+NotificationLabel.Position = UDim2.new(0.5, 5, 0, 520) -- Adjusted position
 NotificationLabel.BackgroundTransparency = 1
 NotificationLabel.Text = ""
 NotificationLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -413,6 +413,40 @@ local function KickPlayer(targetPlayer)
     end
 end
 
+-- Harass Variables and Function
+local HarassEnabled = {} -- Table to track harass state per player
+
+local function ToggleHarass(targetPlayer, harassButton)
+    if HarassEnabled[targetPlayer] then
+        -- Stop harassing
+        HarassEnabled[targetPlayer] = false
+        harassButton.Text = "Toggle Harass"
+    else
+        -- Start harassing
+        HarassEnabled[targetPlayer] = true
+        harassButton.Text = "Stop Harass"
+        spawn(function()
+            while HarassEnabled[targetPlayer] and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") do
+                -- Teleport behind
+                local targetCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+                local behindPos = targetCFrame * CFrame.new(0, 0, 3) -- 3 studs behind
+                LocalPlayer.Character.HumanoidRootPart.CFrame = behindPos
+                wait(0.5)
+                -- Move forward (1 stud closer, 2 studs from target)
+                local forwardPos = targetCFrame * CFrame.new(0, 0, 2)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = forwardPos
+                wait(0.5)
+                -- Move back (3 studs behind again)
+                LocalPlayer.Character.HumanoidRootPart.CFrame = behindPos
+                wait(0.5)
+            end
+            -- Ensure harass is stopped if loop ends
+            HarassEnabled[targetPlayer] = false
+            harassButton.Text = "Toggle Harass"
+        end)
+    end
+end
+
 -- Flight and Noclip Variables
 local Flying = false
 local Noclip = false
@@ -513,8 +547,8 @@ local function UpdatePlayerList()
                     -- Open new menu for selected player
                     CurrentSelectedPlayer = player
                     CurrentActionFrame = Instance.new("Frame")
-                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 150)
-                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 320) -- Adjusted position
+                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 185) -- Taller for Harass button
+                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 340) -- Adjusted position
                     CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
                     CurrentActionFrame.Parent = FunctionsFrame
                     local ActionCorner = Instance.new("UICorner")
@@ -535,6 +569,10 @@ local function UpdatePlayerList()
 
                     CreateButton("KickPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 110), "Kick", function()
                         KickPlayer(player)
+                    end)
+
+                    local harassButton = CreateButton("ToggleHarass", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 145), "Toggle Harass", function()
+                        ToggleHarass(player, harassButton)
                     end)
                 end
             end)
@@ -559,7 +597,7 @@ CreateButton("TeleportUp", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.ne
 -- Speed Hack Input
 local SpeedInput = Instance.new("TextBox")
 SpeedInput.Size = UDim2.new(0.5, -10, 0, 35)
-SpeedInput.Position = UDim2.new(0.5, 5, 0, 190) -- Adjusted position
+SpeedInput.Position = UDim2.new(0.5, 5, 0, 190)
 SpeedInput.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 SpeedInput.Text = "16" -- Default walk speed
 SpeedInput.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -672,6 +710,9 @@ Players.PlayerRemoving:Connect(function(player)
     if ESPBoxes[player] then
         ESPBoxes[player]:Destroy()
         ESPBoxes[player] = nil
+    end
+    if HarassEnabled[player] then
+        HarassEnabled[player] = false -- Stop harassing if player leaves
     end
 end)
 
