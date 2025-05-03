@@ -1,12 +1,11 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Gravity Hack, Infinite Jump, Spin Player, God Mode, Flight, ESP, Teleport Up (100 studs), Teleport to Random Player, Teleport to Mouse, Teleport Behind Player (Alt/GUI), Speed Hack
--- GUI: 600x400px, black/blue theme (Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), single-column button layout, player list, minimize/maximize, Made by: DdeM3zz
+-- Features: Gravity Hack, Infinite Jump, Spin Player, God Mode, Flight, ESP, Teleport Behind Player (Alt/GUI), Speed Hack
+-- GUI: 600x600px, black/blue theme (Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), single-column buttons, player list, minimize/maximize, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
 
 -- Local player
 local LocalPlayer = Players.LocalPlayer
@@ -18,10 +17,10 @@ ScreenGui.Name = "AMM_AdminPanel"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
--- Main Frame (Draggable, 600x400)
+-- Main Frame (Draggable, 600x600)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 600, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 600, 0, 600)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -300)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -102,7 +101,7 @@ FunctionsCorner.Parent = FunctionsFrame
 
 -- Player List (Left)
 local PlayerListFrame = Instance.new("ScrollingFrame")
-PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 300)
+PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 460)
 PlayerListFrame.Position = UDim2.new(0, 5, 0, 5)
 PlayerListFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
 PlayerListFrame.ScrollBarThickness = 5
@@ -211,7 +210,7 @@ local function ToggleMinimize()
         MadeByLabel.Visible = false
         MinimizeButton.Text = "+"
     else
-        MainFrame.Size = UDim2.new(0, 600, 0, 400)
+        MainFrame.Size = UDim2.new(0, 600, 0, 600)
         FunctionsFrame.Visible = true
         MadeByLabel.Visible = true
         MinimizeButton.Text = "-"
@@ -396,35 +395,7 @@ local function ToggleESP(espButton)
     end
 end
 
--- Teleport Functions
-local function TeleportUp()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local currentPos = LocalPlayer.Character.HumanoidRootPart.Position
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(currentPos + Vector3.new(0, 100, 0))
-    end
-end
-
-local function TeleportToRandomPlayer()
-    local otherPlayers = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            table.insert(otherPlayers, player)
-        end
-    end
-    if #otherPlayers > 0 then
-        local randomPlayer = otherPlayers[math.random(1, #otherPlayers)]
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = randomPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
-        end
-    end
-end
-
-local function TeleportToMouse()
-    if Mouse.Hit and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Mouse.Hit.Position + Vector3.new(0, 3, 0))
-    end
-end
-
+-- Teleport Behind
 local function TeleportBehind(targetPlayer)
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
@@ -446,6 +417,13 @@ local function TeleportBehindClosest()
     end
     if closestPlayer then
         TeleportBehind(closestPlayer)
+    end
+end
+
+-- Teleport to Mouse (Ctrl only)
+local function TeleportToMouse()
+    if Mouse.Hit and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Mouse.Hit.Position + Vector3.new(0, 3, 0))
     end
 end
 
@@ -476,22 +454,16 @@ local function UpdatePlayerList()
                     if CurrentActionFrame then CurrentActionFrame:Destroy() end
                     CurrentSelectedPlayer = player
                     CurrentActionFrame = Instance.new("Frame")
-                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 80)
-                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 310)
+                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 35)
+                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 470)
                     CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
                     CurrentActionFrame.Parent = FunctionsFrame
                     local ActionCorner = Instance.new("UICorner")
                     ActionCorner.CornerRadius = UDim.new(0, 8)
                     ActionCorner.Parent = CurrentActionFrame
 
-                    CreateButton("TeleportBehind", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 5), "Teleport Behind", function()
+                    CreateButton("TeleportBehind", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 0), "Teleport Behind", function()
                         TeleportBehind(player)
-                    end)
-
-                    CreateButton("TeleportTo", CurrentActionFrame, UDim2.new(1, -10, 0, 35), UDim2.new(0, 5, 0, 40), "Teleport To", function()
-                        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                            LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
-                        end
                     end)
                 end
             end)
@@ -519,23 +491,20 @@ end)
 local espButton = CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 230), "Toggle ESP", function()
     ToggleESP(espButton)
 end)
-CreateButton("TeleportUp", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 275), "Teleport Up 100", TeleportUp)
-CreateButton("TeleportRandom", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 320), "Teleport to Random", TeleportToRandomPlayer)
-CreateButton("TeleportMouse", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 365), "Teleport to Mouse", TeleportToMouse)
 
 -- Inputs and Apply Buttons
-local SpeedInput = CreateTextBox("SpeedInput", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 410), "16")
-CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 455), "Apply Speed", function()
+local SpeedInput = CreateTextBox("SpeedInput", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 275), "16")
+CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 320), "Apply Speed", function()
     ApplySpeed(SpeedInput.Text)
 end)
 
-local SpinSpeedInput = CreateTextBox("SpinSpeedInput", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 500), "50")
-CreateButton("ApplySpinSpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 545), "Apply Spin Speed", function()
+local SpinSpeedInput = CreateTextBox("SpinSpeedInput", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 365), "50")
+CreateButton("ApplySpinSpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 410), "Apply Spin Speed", function()
     ApplySpinSpeed(SpinSpeedInput.Text)
 end)
 
-local GravityInput = CreateTextBox("GravityInput", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 590), "196.2")
-CreateButton("ApplyGravity", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 635), "Apply Gravity", function()
+local GravityInput = CreateTextBox("GravityInput", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 455), "196.2")
+CreateButton("ApplyGravity", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 500), "Apply Gravity", function()
     ApplyGravity(GravityInput.Text)
 end)
 
@@ -569,10 +538,20 @@ local function UpdateFlight()
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDirection = moveDirection + Vector3.new(0, 1, 0) end
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDirection = moveDirection - Vector3.new(0, 1, 0) end
 
-        if BodyVelocity then BodyVelocity.Velocity = moveDirection * FlySpeed end
+        if moveDirection.Magnitude > 0 then
+            moveDirection = moveDirection.Unit * FlySpeed
+        end
+        if BodyVelocity then BodyVelocity.Velocity = moveDirection end
         if BodyGyro then BodyGyro.CFrame = camera.CFrame end
     end
 end
+
+-- Gravity Update
+RunService.Stepped:Connect(function()
+    if GravityEnabled and BodyForce and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        BodyForce.Force = Vector3.new(0, LocalPlayer.Character.HumanoidRootPart:GetMass() * (196.2 - GravityValue), 0)
+    end
+end)
 
 -- Spin Update
 RunService.Stepped:Connect(function()
