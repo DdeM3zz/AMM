@@ -4,19 +4,29 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Character = LocalPlayer.Character
+local HumanoidRootPart
 local AnimationId = "rbxassetid://132642704417515"
+local clone = nil
 
 -- Wait for character to fully load
-LocalPlayer.CharacterAdded:Connect(function(newChar)
-    Character = newChar
-    HumanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
-end)
+local function waitForCharacter()
+    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    HumanoidRootPart = Character and Character:WaitForChild("HumanoidRootPart", 5)
+    if not HumanoidRootPart then
+        warn("Failed to find HumanoidRootPart, retrying...")
+        return false
+    end
+    return true
+end
 
 -- Create clone
 local function createClone()
+    if not waitForCharacter() then return nil end
+    
     local clone = Character:Clone()
+    if not clone then return nil end
+    
     clone.Name = "StandAMM_Clone"
     clone.Parent = workspace
     
@@ -28,11 +38,19 @@ local function createClone()
     end
     
     -- Setup humanoid
-    local humanoid = clone:WaitForChild("Humanoid")
+    local humanoid = clone:WaitForChild("Humanoid", 5)
+    if not humanoid then
+        clone:Destroy()
+        return nil
+    end
     humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
     
     -- Load and play animation
-    local animator = humanoid:WaitForChild("Animator")
+    local animator = humanoid:WaitForChild("Animator", 5)
+    if not animator then
+        clone:Destroy()
+        return nil
+    end
     local animation = Instance.new("Animation")
     animation.AnimationId = AnimationId
     local animationTrack = animator:LoadAnimation(animation)
@@ -42,35 +60,41 @@ local function createClone()
 end
 
 -- Initialize clone
-local clone = createClone()
+clone = createClone()
 
 -- Update clone position and rotation
 RunService.Heartbeat:Connect(function()
-    if Character and HumanoidRootPart and clone and clone:FindFirstChild("HumanoidRootPart") then
-        local cloneRoot = clone.HumanoidRootPart
-        
-        -- Position behind-left (offset: -3 studs back, -2 studs left)
-        local offset = CFrame.new(-2, 0, -3) -- Left: -2, Back: -3
-        local targetCFrame = HumanoidRootPart.CFrame * offset
-        
-        -- Smoothly interpolate position
-        cloneRoot.CFrame = cloneRoot.CFrame:Lerp(targetCFrame, 0.1)
-        
-        -- Sync rotation (only Y-axis for facing same direction)
-        local _, y, _ = HumanoidRootPart.CFrame:ToEulerAnglesYXZ()
-        cloneRoot.CFrame = CFrame.new(cloneRoot.Position) * CFrame.Angles(0, y, 0)
-        
-        -- Ensure clone stays upright and doesn't fall
-        clone.Humanoid.PlatformStand = true
-    else
-        -- Recreate clone if it was destroyed
+    if not Character or not HumanoidRootPart or not clone or not clone:FindFirstChild("HumanoidRootPart") then
+        if clone then
+            clone:Destroy()
+        end
         clone = createClone()
+        return
     end
+    
+    local cloneRoot = clone.HumanoidRootPart
+    
+    -- Position behind-left (offset: -3 studs back, -2 studs left)
+    local offset = CFrame.new(-2, 0, -3)
+    local targetCFrame = HumanoidRootPart.CFrame * offset
+    
+    -- Smoothly interpolate position
+    cloneRoot.CFrame = cloneRoot.CFrame:Lerp(targetCFrame, 0.1)
+    
+    -- Sync rotation (only Y-axis for facing same direction)
+    local _, y, _ = HumanoidRootPart.CFrame:ToEulerAnglesYXZ()
+    cloneRoot.CFrame = CFrame.new(cloneRoot.Position) * CFrame.Angles(0, y, 0)
+    
+    -- Ensure clone stays upright
+    clone.Humanoid.PlatformStand = true
 end)
 
--- Handle clone cleanup on player death
-Character.Humanoid.Died:Connect(function()
+-- Handle character changes
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    Character = newChar
     if clone then
         clone:Destroy()
     end
+    waitForCharacter()
+    clone = createClone()
 end)
