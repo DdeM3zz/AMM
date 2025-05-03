@@ -1,6 +1,6 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
 -- Features: Teleportation, Kill All, Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player
--- GUI: Wider, vibrant design with purple/cyan theme, gradients, rounded corners, hover effects, text-based hints, toggleable action menu, Made by: DdeM3zz
+-- GUI: Wider, vibrant purple/cyan theme, gradients, rounded corners, hover effects, text-based hints (repositioned), toggleable action menu, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
@@ -35,7 +35,7 @@ ShadowCorner.Parent = ShadowFrame
 
 -- Main Frame (Draggable)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 500) -- Wider GUI
+MainFrame.Size = UDim2.new(0, 400, 0, 500)
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 20, 60) -- Dark Purple base
 MainFrame.BorderSizePixel = 0
@@ -111,11 +111,20 @@ FunctionsCorner.Parent = FunctionsFrame
 
 -- Scrolling Frame for Player List
 local PlayerListFrame = Instance.new("ScrollingFrame")
-PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 370) -- Adjusted for wider GUI
+PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 370)
 PlayerListFrame.Position = UDim2.new(0, 5, 0, 5)
-PlayerListFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+PlayerListFrame.BackgroundColor3 = Color3.fromRGB(50, 30, 70) -- Dark Purple
 PlayerListFrame.ScrollBarThickness = 5
 PlayerListFrame.Parent = FunctionsFrame
+
+-- Gradient for PlayerListFrame
+local PlayerListGradient = Instance.new("UIGradient")
+PlayerListGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 30, 70)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 20, 50))
+}
+PlayerListGradient.Rotation = 90
+PlayerListGradient.Parent = PlayerListFrame
 
 -- Rounded Corners for PlayerListFrame
 local PlayerListCorner = Instance.new("UICorner")
@@ -128,10 +137,10 @@ UIListLayout.Parent = PlayerListFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
--- Hints Label (Text-Based)
+-- Hints Label (Text-Based, Repositioned)
 local HintsLabel = Instance.new("TextLabel")
-HintsLabel.Size = UDim2.new(0.5, -10, 0, 60)
-HintsLabel.Position = UDim2.new(0.5, 5, 0, 385) -- Adjusted for wider GUI
+HintsLabel.Size = UDim2.new(0.5, -10, 0, 50) -- Reduced height
+HintsLabel.Position = UDim2.new(0.5, 5, 0, 350) -- Moved higher
 HintsLabel.BackgroundTransparency = 1
 HintsLabel.Text = "Alt: Teleport behind closest player\nCtrl + Left Click: Teleport to mouse"
 HintsLabel.TextColor3 = Color3.fromRGB(0, 200, 200) -- Cyan
