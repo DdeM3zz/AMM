@@ -1,5 +1,5 @@
 -- Dead Rails ESP and NoClip Script for Xeno Executor
--- Created by DdeM3zz on May 03, 2025
+-- Created by Grok on May 03, 2025
 -- For Dead Rails (PlaceId: 70876832253163 for game, 116495829188952 for lobby)
 
 -- Services
