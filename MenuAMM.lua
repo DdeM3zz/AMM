@@ -1,6 +1,6 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation, Kill All, Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player
--- GUI: Wider, vibrant purple/cyan theme, gradients, rounded corners, hover effects, text-based hints (repositioned), toggleable action menu, Made by: DdeM3zz
+-- Features: Teleportation, Kill All, Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification)
+-- GUI: Wider, black/blue theme, gradients, rounded corners, hover effects, text-based hints, toggleable action menu, minimize/maximize, optimized layout, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
@@ -18,26 +18,11 @@ ScreenGui.Name = "AMM_AdminPanel"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
--- Shadow Frame (for depth effect)
-local ShadowFrame = Instance.new("Frame")
-ShadowFrame.Size = UDim2.new(0, 410, 0, 510)
-ShadowFrame.Position = UDim2.new(0.5, -205, 0.5, -255)
-ShadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-ShadowFrame.BackgroundTransparency = 0.7
-ShadowFrame.BorderSizePixel = 0
-ShadowFrame.ZIndex = 5
-ShadowFrame.Parent = ScreenGui
-
--- Rounded Corners for ShadowFrame
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0, 12)
-ShadowCorner.Parent = ShadowFrame
-
 -- Main Frame (Draggable)
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 400, 0, 500)
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 20, 60) -- Dark Purple base
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 20, 30) -- Dark Blue base
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 MainFrame.Active = true
@@ -47,8 +32,8 @@ MainFrame.ZIndex = 10
 -- Gradient for MainFrame
 local MainGradient = Instance.new("UIGradient")
 MainGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 20, 60)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 10))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 20, 30)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
 }
 MainGradient.Rotation = 90
 MainGradient.Parent = MainFrame
@@ -60,7 +45,7 @@ MainCorner.Parent = MainFrame
 
 -- Border for MainFrame
 local MainStroke = Instance.new("UIStroke")
-MainStroke.Color = Color3.fromRGB(200, 200, 200)
+MainStroke.Color = Color3.fromRGB(0, 100, 200)
 MainStroke.Thickness = 1
 MainStroke.Transparency = 0.5
 MainStroke.Parent = MainFrame
@@ -70,7 +55,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, 0, 0, 40)
 TitleLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 TitleLabel.Text = "AMM Admin Panel"
-TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 255) -- Cyan
+TitleLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Bright Blue
 TitleLabel.TextSize = 20
 TitleLabel.Font = Enum.Font.SourceSansBold
 TitleLabel.Parent = MainFrame
@@ -82,24 +67,41 @@ TitleCorner.Parent = TitleLabel
 
 -- Border for TitleLabel
 local TitleStroke = Instance.new("UIStroke")
-TitleStroke.Color = Color3.fromRGB(0, 255, 255)
+TitleStroke.Color = Color3.fromRGB(0, 100, 200)
 TitleStroke.Thickness = 1
 TitleStroke.Transparency = 0.3
 TitleStroke.Parent = TitleLabel
+
+-- Minimize Button
+local Minimized = false
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(0, 150, 255)
+MinimizeButton.TextSize = 16
+MinimizeButton.Font = Enum.Font.SourceSansBold
+MinimizeButton.Parent = TitleLabel
+
+-- Rounded Corners for MinimizeButton
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 8)
+MinimizeCorner.Parent = MinimizeButton
 
 -- Functions Frame
 local FunctionsFrame = Instance.new("Frame")
 FunctionsFrame.Size = UDim2.new(1, -10, 1, -50)
 FunctionsFrame.Position = UDim2.new(0, 5, 0, 45)
-FunctionsFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Gray base
+FunctionsFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 40) -- Dark Gray-Blue
 FunctionsFrame.BorderSizePixel = 0
 FunctionsFrame.Parent = MainFrame
 
 -- Gradient for FunctionsFrame
 local FunctionsGradient = Instance.new("UIGradient")
 FunctionsGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 30, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
 }
 FunctionsGradient.Rotation = 90
 FunctionsGradient.Parent = FunctionsFrame
@@ -111,17 +113,17 @@ FunctionsCorner.Parent = FunctionsFrame
 
 -- Scrolling Frame for Player List
 local PlayerListFrame = Instance.new("ScrollingFrame")
-PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 370)
+PlayerListFrame.Size = UDim2.new(0.5, -10, 0, 380)
 PlayerListFrame.Position = UDim2.new(0, 5, 0, 5)
-PlayerListFrame.BackgroundColor3 = Color3.fromRGB(50, 30, 70) -- Dark Purple
+PlayerListFrame.BackgroundColor3 = Color3.fromRGB(15, 25, 35) -- Dark Blue
 PlayerListFrame.ScrollBarThickness = 5
 PlayerListFrame.Parent = FunctionsFrame
 
 -- Gradient for PlayerListFrame
 local PlayerListGradient = Instance.new("UIGradient")
 PlayerListGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 30, 70)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 20, 50))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 25, 35)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 15, 20))
 }
 PlayerListGradient.Rotation = 90
 PlayerListGradient.Parent = PlayerListFrame
@@ -137,13 +139,13 @@ UIListLayout.Parent = PlayerListFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
--- Hints Label (Text-Based, Repositioned)
+-- Hints Label (Text-Based)
 local HintsLabel = Instance.new("TextLabel")
-HintsLabel.Size = UDim2.new(0.5, -10, 0, 50) -- Reduced height
-HintsLabel.Position = UDim2.new(0.5, 5, 0, 350) -- Moved higher
+HintsLabel.Size = UDim2.new(0.5, -10, 0, 40)
+HintsLabel.Position = UDim2.new(0.5, 5, 0, 400)
 HintsLabel.BackgroundTransparency = 1
 HintsLabel.Text = "Alt: Teleport behind closest player\nCtrl + Left Click: Teleport to mouse"
-HintsLabel.TextColor3 = Color3.fromRGB(0, 200, 200) -- Cyan
+HintsLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Bright Blue
 HintsLabel.TextSize = 12
 HintsLabel.TextWrapped = true
 HintsLabel.Font = Enum.Font.SourceSansItalic
@@ -151,11 +153,11 @@ HintsLabel.Parent = FunctionsFrame
 
 -- Made by Label
 local MadeByLabel = Instance.new("TextLabel")
-MadeByLabel.Size = UDim2.new(1, -10, 0, 30)
-MadeByLabel.Position = UDim2.new(0, 5, 1, -35)
+MadeByLabel.Size = UDim2.new(1, -10, 0, 25)
+MadeByLabel.Position = UDim2.new(0, 5, 1, -30)
 MadeByLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MadeByLabel.Text = "Made by: DdeM3zz"
-MadeByLabel.TextColor3 = Color3.fromRGB(0, 255, 255) -- Cyan
+MadeByLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Bright Blue
 MadeByLabel.TextSize = 14
 MadeByLabel.Font = Enum.Font.SourceSans
 MadeByLabel.Parent = MainFrame
@@ -165,13 +167,25 @@ local MadeByCorner = Instance.new("UICorner")
 MadeByCorner.CornerRadius = UDim.new(0, 8)
 MadeByCorner.Parent = MadeByLabel
 
+-- Notification Label for Kick Feedback
+local NotificationLabel = Instance.new("TextLabel")
+NotificationLabel.Size = UDim2.new(0.5, -10, 0, 30)
+NotificationLabel.Position = UDim2.new(0.5, 5, 0, 350)
+NotificationLabel.BackgroundTransparency = 1
+NotificationLabel.Text = ""
+NotificationLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- Red for visibility
+NotificationLabel.TextSize = 12
+NotificationLabel.Font = Enum.Font.SourceSans
+NotificationLabel.Parent = FunctionsFrame
+NotificationLabel.Visible = false
+
 -- Button Creation Function
 local function CreateButton(name, parent, size, position, text, callback)
     local Button = Instance.new("TextButton")
     Button.Name = name
     Button.Size = size
     Button.Position = position
-    Button.BackgroundColor3 = Color3.fromRGB(30, 60, 60) -- Dark Teal
+    Button.BackgroundColor3 = Color3.fromRGB(20, 40, 60) -- Dark Blue
     Button.Text = text
     Button.TextColor3 = Color3.fromRGB(240, 240, 240) -- Bright White
     Button.TextSize = 14
@@ -187,22 +201,49 @@ local function CreateButton(name, parent, size, position, text, callback)
     -- Gradient for Button
     local ButtonGradient = Instance.new("UIGradient")
     ButtonGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 60, 60)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 40, 40))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 40, 60)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 20, 30))
     }
     ButtonGradient.Rotation = 90
     ButtonGradient.Parent = Button
 
+    -- Border for Button
+    local ButtonStroke = Instance.new("UIStroke")
+    ButtonStroke.Color = Color3.fromRGB(0, 100, 200)
+    ButtonStroke.Thickness = 1
+    ButtonStroke.Transparency = 0.5
+    ButtonStroke.Parent = Button
+
     -- Hover Effect
     Button.MouseEnter:Connect(function()
-        Button.BackgroundColor3 = Color3.fromRGB(50, 100, 100) -- Lighter Teal
+        Button.BackgroundColor3 = Color3.fromRGB(40, 80, 120) -- Lighter Blue
     end)
     Button.MouseLeave:Connect(function()
-        Button.BackgroundColor3 = Color3.fromRGB(30, 60, 60) -- Original Dark Teal
+        Button.BackgroundColor3 = Color3.fromRGB(20, 40, 60) -- Original Dark Blue
     end)
 
     return Button
 end
+
+-- Minimize/Maximize Function
+local function ToggleMinimize()
+    Minimized = not Minimized
+    if Minimized then
+        MainFrame.Size = UDim2.new(0, 400, 0, 40)
+        FunctionsFrame.Visible = false
+        MadeByLabel.Visible = false
+        MinimizeButton.Text = "+"
+        MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
+    else
+        MainFrame.Size = UDim2.new(0, 400, 0, 500)
+        FunctionsFrame.Visible = true
+        MadeByLabel.Visible = true
+        MinimizeButton.Text = "-"
+        MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
+    end
+end
+
+MinimizeButton.MouseButton1Click:Connect(ToggleMinimize)
 
 -- Teleport Functions
 local function TeleportBehind(targetPlayer)
@@ -262,7 +303,7 @@ local function ToggleESP()
                 box.AlwaysOnTop = true
                 box.ZIndex = 10
                 box.Transparency = 0.5
-                box.Color3 = Color3.fromRGB(255, 0, 0) -- Red outline
+                box.Color3 = Color3.fromRGB(0, 150, 255) -- Blue outline to match theme
                 box.Parent = game.CoreGui
                 ESPBoxes[player] = box
             end
@@ -308,13 +349,18 @@ local function ToggleGodMode()
     end
 end
 
--- Kick Player Function
+-- Kick Player Function with Notification
 local function KickPlayer(targetPlayer)
     if targetPlayer ~= LocalPlayer then
-        -- Simulate kick by forcing client disconnection (limited by server)
+        NotificationLabel.Text = "Kick attempted on " .. targetPlayer.Name
+        NotificationLabel.Visible = true
         pcall(function()
             targetPlayer:Kick("Kicked by AMM Admin")
+        end, function(err)
+            NotificationLabel.Text = "Kick failed: Server restrictions"
         end)
+        wait(3)
+        NotificationLabel.Visible = false
     end
 end
 
@@ -389,7 +435,7 @@ local function UpdatePlayerList()
         if player ~= LocalPlayer then
             local PlayerButton = Instance.new("TextButton")
             PlayerButton.Size = UDim2.new(1, -10, 0, 30)
-            PlayerButton.BackgroundColor3 = Color3.fromRGB(30, 60, 60)
+            PlayerButton.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
             PlayerButton.Text = player.Name
             PlayerButton.TextColor3 = Color3.fromRGB(240, 240, 240)
             PlayerButton.TextSize = 14
@@ -413,9 +459,9 @@ local function UpdatePlayerList()
                     -- Open new menu for selected player
                     CurrentSelectedPlayer = player
                     CurrentActionFrame = Instance.new("Frame")
-                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 120)
-                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 255)
-                    CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 100)
+                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 290)
+                    CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(20, 30, 40)
                     CurrentActionFrame.Parent = FunctionsFrame
                     local ActionCorner = Instance.new("UICorner")
                     ActionCorner.CornerRadius = UDim.new(0, 8)
@@ -425,11 +471,11 @@ local function UpdatePlayerList()
                         TeleportBehind(player)
                     end)
 
-                    CreateButton("TeleportTo", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 40), "Teleport To", function()
+                    CreateButton("TeleportTo", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 35), "Teleport To", function()
                         TeleportToPlayer(player)
                     end)
 
-                    CreateButton("KickPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 75), "Kick", function()
+                    CreateButton("KickPlayer", CurrentActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 65), "Kick", function()
                         KickPlayer(player)
                     end)
                 end
@@ -439,18 +485,24 @@ local function UpdatePlayerList()
     PlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
 end
 
--- GUI Buttons and Inputs (Top-Right)
-CreateButton("KillAll", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 5), "Kill All", KillAll)
-CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 40), "Toggle Flight", ToggleFlight)
-CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 75), "Toggle Noclip", ToggleNoclip)
-CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 110), "Toggle ESP", ToggleESP)
-CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 145), "Toggle God Mode", ToggleGodMode)
+-- GUI Buttons and Inputs (Two Columns, Top-Right)
+-- Left Column
+CreateButton("KillAll", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 5), "Kill All", KillAll)
+CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 40), "Toggle Flight", ToggleFlight)
+CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.5, 5, 0, 75), "Toggle Noclip", ToggleNoclip)
+
+-- Right Column
+CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 5), "Toggle ESP", ToggleESP)
+CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 40), "Toggle God Mode", ToggleGodMode)
+CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.25, -10, 0, 30), UDim2.new(0.75, -5, 0, 75), "Apply Speed", function()
+    ApplySpeed(SpeedInput.Text)
+end)
 
 -- Speed Hack Input
 local SpeedInput = Instance.new("TextBox")
 SpeedInput.Size = UDim2.new(0.5, -10, 0, 30)
-SpeedInput.Position = UDim2.new(0.5, 5, 0, 180)
-SpeedInput.BackgroundColor3 = Color3.fromRGB(30, 60, 60)
+SpeedInput.Position = UDim2.new(0.5, 5, 0, 110)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
 SpeedInput.Text = "16" -- Default walk speed
 SpeedInput.TextColor3 = Color3.fromRGB(240, 240, 240)
 SpeedInput.TextSize = 14
@@ -462,9 +514,12 @@ local SpeedInputCorner = Instance.new("UICorner")
 SpeedInputCorner.CornerRadius = UDim.new(0, 10)
 SpeedInputCorner.Parent = SpeedInput
 
-CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0, 215), "Apply Speed", function()
-    ApplySpeed(SpeedInput.Text)
-end)
+-- Border for SpeedInput
+local SpeedInputStroke = Instance.new("UIStroke")
+SpeedInputStroke.Color = Color3.fromRGB(0, 100, 200)
+SpeedInputStroke.Thickness = 1
+SpeedInputStroke.Transparency = 0.5
+SpeedInputStroke.Parent = SpeedInput
 
 -- Input Handling for Flight and Teleport
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -539,7 +594,7 @@ Players.PlayerAdded:Connect(function(player)
         box.AlwaysOnTop = true
         box.ZIndex = 10
         box.Transparency = 0.5
-        box.Color3 = Color3.fromRGB(255, 0, 0)
+        box.Color3 = Color3.fromRGB(0, 150, 255)
         box.Parent = game.CoreGui
         ESPBoxes[player] = box
     end
