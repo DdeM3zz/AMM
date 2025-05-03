@@ -1,5 +1,5 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn, Harass (toggleable persistent teleport and forward/backward movement behind player)
+-- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn, Harass (persistent teleport and movement), Spin Player (toggleable high-speed spin with fling on touch, adjustable speed)
 -- GUI: Larger (500x600), black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu with Harass, increased button spacing, MadeByLabel hidden when minimized, no hints, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
@@ -123,7 +123,7 @@ UIListLayout.Padding = UDim.new(0, 5)
 -- Notification Label for Kick and Kill All Feedback
 local NotificationLabel = Instance.new("TextLabel")
 NotificationLabel.Size = UDim2.new(0.5, -10, 0, 35)
-NotificationLabel.Position = UDim2.new(0.5, 5, 0, 520)
+NotificationLabel.Position = UDim2.new(0.5, 5, 0, 565) -- Adjusted for Spin buttons
 NotificationLabel.BackgroundTransparency = 1
 NotificationLabel.Text = ""
 NotificationLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -319,7 +319,7 @@ local function ToggleESP()
                 local box = Instance.new("BoxHandleAdornment")
                 box.Size = player.Character:GetExtentsSize() * 1.2
                 box.Adornee = player.Character
-               Kronor, box.AlwaysOnTop = true
+                box.AlwaysOnTop = true
                 box.ZIndex = 10
                 box.Transparency = 0.5
                 box.Color3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -447,6 +447,69 @@ local function ToggleHarass(targetPlayer, harassButton)
     end
 end
 
+-- Spin Player Variables and Function
+local Spinning = false
+local SpinSpeed = 50 -- Default spin speed in rad/s
+local BodyAngularVelocity = nil
+local TouchConnections = {}
+
+local function ToggleSpin(spinButton)
+    Spinning = not Spinning
+    if Spinning then
+        spinButton.Text = "Stop Spin"
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            -- Apply spinning
+            BodyAngularVelocity = Instance.new("BodyAngularVelocity")
+            BodyAngularVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
+            BodyAngularVelocity.AngularVelocity = Vector3.new(0, SpinSpeed, 0) -- Spin on Y-axis
+            BodyAngularVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
+            -- Set up touch detection
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local connection = part.Touched:Connect(function(hit)
+                        if Spinning then
+                            local otherPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+                            if otherPlayer and otherPlayer ~= LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                local direction = (hit.Position - LocalPlayer.Character.HumanoidRootPart.Position).Unit
+                                local flingVelocity = direction * SpinSpeed * 10 -- Fling speed = 10x spin speed
+                                local bv = Instance.new("BodyVelocity")
+                                bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                                bv.Velocity = flingVelocity
+                                bv.Parent = otherPlayer.Character.HumanoidRootPart
+                                spawn(function()
+                                    wait(0.1) -- Brief fling
+                                    if bv then bv:Destroy() end
+                                end)
+                            end
+                        end
+                    end)
+                    table.insert(TouchConnections, connection)
+                end
+            end
+        end
+    else
+        spinButton.Text = "Toggle Spin"
+        if BodyAngularVelocity then
+            BodyAngularVelocity:Destroy()
+            BodyAngularVelocity = nil
+        end
+        for _, connection in pairs(TouchConnections) do
+            connection:Disconnect()
+        end
+        TouchConnections = {}
+    end
+end
+
+local function ApplySpinSpeed(speedText)
+    local speed = tonumber(speedText)
+    if speed and speed >= 0 and speed <= 500 then
+        SpinSpeed = speed
+        if Spinning and BodyAngularVelocity then
+            BodyAngularVelocity.AngularVelocity = Vector3.new(0, SpinSpeed, 0)
+        end
+    end
+end
+
 -- Flight and Noclip Variables
 local Flying = false
 local Noclip = false
@@ -548,7 +611,7 @@ local function UpdatePlayerList()
                     CurrentSelectedPlayer = player
                     CurrentActionFrame = Instance.new("Frame")
                     CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 185)
-                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 340)
+                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 385) -- Adjusted for Spin buttons
                     CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
                     CurrentActionFrame.Parent = FunctionsFrame
                     local ActionCorner = Instance.new("UICorner")
@@ -593,6 +656,9 @@ CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new
 CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 50), "Toggle God Mode", ToggleGodMode)
 CreateButton("ToggleAutoRespawn", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 95), "Toggle Auto-Respawn", ToggleAutoRespawn)
 CreateButton("TeleportUp", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 140), "Teleport Up", TeleportToHighestPoint)
+local spinButton = CreateButton("ToggleSpin", FunctionsFrame, UDim2.new(0.25, -10, 0, 35), UDim2.new(0.75, -5, 0, 185), "Toggle Spin", function()
+    ToggleSpin(spinButton)
+end)
 
 -- Speed Hack Input
 local SpeedInput = Instance.new("TextBox")
@@ -620,6 +686,34 @@ SpeedInputStroke.Parent = SpeedInput
 -- Apply Speed Button
 CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 235), "Apply Speed", function()
     ApplySpeed(SpeedInput.Text)
+end)
+
+-- Spin Speed Input
+local SpinSpeedInput = Instance.new("TextBox")
+SpinSpeedInput.Size = UDim2.new(0.5, -10, 0, 35)
+SpinSpeedInput.Position = UDim2.new(0.5, 5, 0, 280)
+SpinSpeedInput.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
+SpinSpeedInput.Text = "50" -- Default spin speed
+SpinSpeedInput.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
+SpinSpeedInput.TextSize = 14
+SpinSpeedInput.Font = Enum.Font.SourceSans
+SpinSpeedInput.Parent = FunctionsFrame
+
+-- Rounded Corners for SpinSpeedInput
+local SpinSpeedInputCorner = Instance.new("UICorner")
+SpinSpeedInputCorner.CornerRadius = UDim.new(0, 10)
+SpinSpeedInputCorner.Parent = SpinSpeedInput
+
+-- Border for SpinSpeedInput
+local SpinSpeedInputStroke = Instance.new("UIStroke")
+SpinSpeedInputStroke.Color = Color3.fromRGB(0, 150, 255) -- Blue
+SpinSpeedInputStroke.Thickness = 1
+SpinSpeedInputStroke.Transparency = 0.5
+SpinSpeedInputStroke.Parent = SpinSpeedInput
+
+-- Apply Spin Speed Button
+CreateButton("ApplySpinSpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 35), UDim2.new(0.5, 5, 0, 325), "Apply Spin Speed", function()
+    ApplySpinSpeed(SpinSpeedInput.Text)
 end)
 
 -- Input Handling for Flight, Teleport, and Infinite Jump
@@ -716,7 +810,7 @@ Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Character Added for Auto-Respawn
+-- Character Added for Auto-Respawn and Spin
 LocalPlayer.CharacterAdded:Connect(function(character)
     if AutoRespawnEnabled then
         local humanoid = character:WaitForChild("Humanoid")
@@ -725,6 +819,38 @@ LocalPlayer.CharacterAdded:Connect(function(character)
             wait(0.1) -- Brief delay
             LocalPlayer:LoadCharacter() -- Respawn
         end)
+    end
+    if Spinning then
+        -- Re-apply spinning
+        wait(0.1) -- Wait for character to load
+        if character:FindFirstChild("HumanoidRootPart") then
+            BodyAngularVelocity = Instance.new("BodyAngularVelocity")
+            BodyAngularVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
+            BodyAngularVelocity.AngularVelocity = Vector3.new(0, SpinSpeed, 0)
+            BodyAngularVelocity.Parent = character.HumanoidRootPart
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local connection = part.Touched:Connect(function(hit)
+                        if Spinning then
+                            local otherPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+                            if otherPlayer and otherPlayer ~= LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                local direction = (hit.Position - LocalPlayer.Character.HumanoidRootPart.Position).Unit
+                                local flingVelocity = direction * SpinSpeed * 10
+                                local bv = Instance.new("BodyVelocity")
+                                bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                                bv.Velocity = flingVelocity
+                                bv.Parent = otherPlayer.Character.HumanoidRootPart
+                                spawn(function()
+                                    wait(0.1)
+                                    if bv then bv:Destroy() end
+                                end)
+                            end
+                        end
+                    end)
+                    table.insert(TouchConnections, connection)
+                end
+            end
+        end
     end
 end)
 
