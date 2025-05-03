@@ -1,6 +1,6 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation (behind players, mouse point, specific player), Kill All, Flight (WASD), Noclip
--- GUI: Draggable, Black/Gray/White theme
+-- Features: Teleportation, Kill All, Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player
+-- GUI: Draggable, Black/Gray/White theme, tooltips for Alt/Ctrl, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
 local Players = game:GetService("Players")
@@ -20,8 +20,8 @@ ScreenGui.ResetOnSpawn = false
 
 -- Main Frame (Draggable)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 300, 0, 500) -- Increased height for new elements
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark Gray
 MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- White Border
 MainFrame.Parent = ScreenGui
@@ -58,6 +58,29 @@ local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Parent = PlayerListFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
+
+-- Hints Label
+local HintsLabel = Instance.new("TextLabel")
+HintsLabel.Size = UDim2.new(0.5, -10, 0, 60)
+HintsLabel.Position = UDim2.new(0.5, 5, 0.5, 180)
+HintsLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+HintsLabel.Text = "Hints:\nAlt: Teleport behind closest player\nCtrl + Left Click: Teleport to mouse"
+HintsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+HintsLabel.TextSize = 12
+HintsLabel.TextWrapped = true
+HintsLabel.Font = Enum.Font.SourceSans
+HintsLabel.Parent = FunctionsFrame
+
+-- Made by Label
+local MadeByLabel = Instance.new("TextLabel")
+MadeByLabel.Size = UDim2.new(1, -10, 0, 20)
+MadeByLabel.Position = UDim2.new(0, 5, 1, -25)
+MadeByLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MadeByLabel.Text = "Made by: DdeM3zz"
+MadeByLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+MadeByLabel.TextSize = 12
+MadeByLabel.Font = Enum.Font.SourceSans
+MadeByLabel.Parent = MainFrame
 
 -- Button Creation Function
 local function CreateButton(name, parent, size, position, text, callback)
@@ -110,6 +133,82 @@ local function KillAll()
             end
             player.Character:BreakJoints() -- Fallback to ensure kill
         end
+    end
+end
+
+-- ESP Variables and Function
+local ESPEnabled = false
+local ESPBoxes = {}
+
+local function ToggleESP()
+    ESPEnabled = not ESPEnabled
+    if not ESPEnabled then
+        for _, box in pairs(ESPBoxes) do
+            box:Destroy()
+        end
+        ESPBoxes = {}
+    else
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local box = Instance.new("BoxHandleAdornment")
+                box.Size = player.Character:GetExtentsSize() * 1.2
+                box.Adornee = player.Character
+                box.AlwaysOnTop = true
+                box.ZIndex = 10
+                box.Transparency = 0.5
+                box.Color3 = Color3.fromRGB(255, 0, 0) -- Red outline
+                box.Parent = game.CoreGui
+                ESPBoxes[player] = box
+            end
+        end
+    end
+end
+
+-- Speed Hack Function
+local function ApplySpeed(speedText)
+    local speed = tonumber(speedText)
+    if speed and speed >= 0 and speed <= 500 and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = speed
+    end
+end
+
+-- God Mode Variables and Function
+local GodModeEnabled = false
+local GodModeConnection = nil
+
+local function ToggleGodMode()
+    GodModeEnabled = not GodModeEnabled
+    if GodModeEnabled then
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            local humanoid = LocalPlayer.Character.Humanoid
+            humanoid.MaxHealth = 1e9
+            humanoid.Health = 1e9
+            GodModeConnection = humanoid.HealthChanged:Connect(function(health)
+                if health < 1e9 then
+                    humanoid.Health = 1e9
+                end
+            end)
+        end
+    else
+        if GodModeConnection then
+            GodModeConnection:Disconnect()
+            GodModeConnection = nil
+        end
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            local humanoid = LocalPlayer.Character.Humanoid
+            humanoid.MaxHealth = 100
+            humanoid.Health = 100
+        end
+    end
+end
+
+-- Kick Player Function
+local function KickPlayer(targetPlayer)
+    if targetPlayer ~= LocalPlayer then
+        -- Simulate kick by forcing client disconnection (limited by server)
+        pcall(function()
+            targetPlayer:Kick("Kicked by AMM Admin")
+        end)
     end
 end
 
@@ -201,16 +300,37 @@ local function UpdatePlayerList()
                 CreateButton("TeleportTo", ActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 40), "Teleport To", function()
                     TeleportToPlayer(player)
                 end)
+
+                CreateButton("KickPlayer", ActionFrame, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, 75), "Kick", function()
+                    KickPlayer(player)
+                end)
             end)
         end
     end
     PlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
 end
 
--- GUI Buttons
+-- GUI Buttons and Inputs
 CreateButton("KillAll", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 5), "Kill All", KillAll)
 CreateButton("ToggleFlight", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 40), "Toggle Flight", ToggleFlight)
 CreateButton("ToggleNoclip", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 75), "Toggle Noclip", ToggleNoclip)
+CreateButton("ToggleESP", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 110), "Toggle ESP", ToggleESP)
+CreateButton("ToggleGodMode", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 145), "Toggle God Mode", ToggleGodMode)
+
+-- Speed Hack Input
+local SpeedInput = Instance.new("TextBox")
+SpeedInput.Size = UDim2.new(0.5, -10, 0, 30)
+SpeedInput.Position = UDim2.new(0.5, 5, 0.5, 250)
+SpeedInput.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpeedInput.Text = "16" -- Default walk speed
+SpeedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedInput.TextSize = 14
+SpeedInput.Font = Enum.Font.SourceSans
+SpeedInput.Parent = FunctionsFrame
+
+CreateButton("ApplySpeed", FunctionsFrame, UDim2.new(0.5, -10, 0, 30), UDim2.new(0.5, 5, 0.5, 285), "Apply Speed", function()
+    ApplySpeed(SpeedInput.Text)
+end)
 
 -- Input Handling for Flight and Teleport
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -274,12 +394,30 @@ local function UpdateFlight()
     end
 end
 
--- Update Player List on Player Join/Leave
-Players.PlayerAdded:Connect(function()
+-- ESP Update on Player Join/Leave
+Players.PlayerAdded:Connect(function(player)
     wait(1) -- Delay to ensure player data is loaded
     UpdatePlayerList()
+    if ESPEnabled and player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local box = Instance.new("BoxHandleAdornment")
+        box.Size = player.Character:GetExtentsSize() * 1.2
+        box.Adornee = player.Character
+        box.AlwaysOnTop = true
+        box.ZIndex = 10
+        box.Transparency = 0.5
+        box.Color3 = Color3.fromRGB(255, 0, 0)
+        box.Parent = game.CoreGui
+        ESPBoxes[player] = box
+    end
 end)
-Players.PlayerRemoving:Connect(UpdatePlayerList)
+
+Players.PlayerRemoving:Connect(function(player)
+    UpdatePlayerList()
+    if ESPBoxes[player] then
+        ESPBoxes[player]:Destroy()
+        ESPBoxes[player] = nil
+    end
+end)
 
 -- Initial Player List Update with Delay
 spawn(function()
