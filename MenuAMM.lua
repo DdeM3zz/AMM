@@ -1,5 +1,5 @@
 -- MenuAMM: Admin Panel Script for Roblox using Xeno Executor
--- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn, Harass (toggleable forward/backward movement behind player)
+-- Features: Teleportation, Kill All (improved with server attempts), Flight (WASD), Noclip, ESP, Speed Hack, God Mode, Kick Player (with notification), Infinite Jump, Teleport Up, Kill Player, Auto-Respawn, Harass (toggleable persistent teleport and forward/backward movement behind player)
 -- GUI: Larger (500x600), black/blue theme (only Color3.fromRGB(0, 0, 0) and Color3.fromRGB(0, 150, 255)), no gradients, toggleable action menu with Harass, increased button spacing, MadeByLabel hidden when minimized, no hints, Made by: DdeM3zz
 -- GitHub Integration: Loads via loadstring from GitHub raw URL
 
@@ -123,7 +123,7 @@ UIListLayout.Padding = UDim.new(0, 5)
 -- Notification Label for Kick and Kill All Feedback
 local NotificationLabel = Instance.new("TextLabel")
 NotificationLabel.Size = UDim2.new(0.5, -10, 0, 35)
-NotificationLabel.Position = UDim2.new(0.5, 5, 0, 520) -- Adjusted position
+NotificationLabel.Position = UDim2.new(0.5, 5, 0, 520)
 NotificationLabel.BackgroundTransparency = 1
 NotificationLabel.Text = ""
 NotificationLabel.TextColor3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -319,7 +319,7 @@ local function ToggleESP()
                 local box = Instance.new("BoxHandleAdornment")
                 box.Size = player.Character:GetExtentsSize() * 1.2
                 box.Adornee = player.Character
-                box.AlwaysOnTop = true
+               Kronor, box.AlwaysOnTop = true
                 box.ZIndex = 10
                 box.Transparency = 0.5
                 box.Color3 = Color3.fromRGB(0, 150, 255) -- Blue
@@ -427,18 +427,18 @@ local function ToggleHarass(targetPlayer, harassButton)
         harassButton.Text = "Stop Harass"
         spawn(function()
             while HarassEnabled[targetPlayer] and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") do
-                -- Teleport behind
+                -- Teleport behind (update position every cycle)
                 local targetCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
                 local behindPos = targetCFrame * CFrame.new(0, 0, 3) -- 3 studs behind
                 LocalPlayer.Character.HumanoidRootPart.CFrame = behindPos
-                wait(0.5)
-                -- Move forward (1 stud closer, 2 studs from target)
-                local forwardPos = targetCFrame * CFrame.new(0, 0, 2)
-                LocalPlayer.Character.HumanoidRootPart.CFrame = forwardPos
-                wait(0.5)
-                -- Move back (3 studs behind again)
-                LocalPlayer.Character.HumanoidRootPart.CFrame = behindPos
-                wait(0.5)
+                wait(0.25)
+                -- Move forward (2 studs behind)
+                if HarassEnabled[targetPlayer] and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    targetCFrame = targetPlayer.Character.HumanoidRootPart.CFrame -- Update target position
+                    local forwardPos = targetCFrame * CFrame.new(0, 0, 2) -- 2 studs behind
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = forwardPos
+                end
+                wait(0.25)
             end
             -- Ensure harass is stopped if loop ends
             HarassEnabled[targetPlayer] = false
@@ -547,8 +547,8 @@ local function UpdatePlayerList()
                     -- Open new menu for selected player
                     CurrentSelectedPlayer = player
                     CurrentActionFrame = Instance.new("Frame")
-                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 185) -- Taller for Harass button
-                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 340) -- Adjusted position
+                    CurrentActionFrame.Size = UDim2.new(0.5, -10, 0, 185)
+                    CurrentActionFrame.Position = UDim2.new(0.5, 5, 0, 340)
                     CurrentActionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black
                     CurrentActionFrame.Parent = FunctionsFrame
                     local ActionCorner = Instance.new("UICorner")
