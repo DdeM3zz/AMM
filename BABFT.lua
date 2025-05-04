@@ -2,7 +2,6 @@ local Player = game.Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
 
--- UI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BoatTeleportUI"
 ScreenGui.Parent = Player:WaitForChild("PlayerGui")
@@ -95,8 +94,8 @@ local function CreateTempPlatform(Position)
     Platform.Size = Vector3.new(10, 1, 10)
     Platform.Position = Position - Vector3.new(0, 2, 0) 
     Platform.Anchored = true
-    Platform.CanCollide = true  -- Ensure collision is enabled
-    Platform.Transparency = 1  -- Fully transparent platform
+    Platform.CanCollide = true 
+    Platform.Transparency = 1  
     Platform.Parent = Workspace
 
     local SurfaceGui = Instance.new("SurfaceGui")
@@ -109,7 +108,7 @@ local function CreateTempPlatform(Position)
     LogoLabel.BackgroundTransparency = 1
     LogoLabel.Text = "BABFT AMM"
     LogoLabel.Font = Enum.Font.SourceSansBold
-    LogoLabel.TextSize = 100  -- Increased text size for better visibility
+    LogoLabel.TextSize = 100 
     LogoLabel.TextTransparency = 0
     LogoLabel.Parent = SurfaceGui
 
@@ -137,9 +136,9 @@ local function AutoFarm()
         if Stage then
             local SandBlock = Stage:FindFirstChild("Sand")
             if SandBlock and SandBlock:IsA("BasePart") then
-                local TeleportPosition = SandBlock.Position + Vector3.new(0, 25, 0)  -- Teleport slightly above the platform
+                local TeleportPosition = SandBlock.Position + Vector3.new(0, 25, 0)  
                 Player.Character.HumanoidRootPart.CFrame = CFrame.new(TeleportPosition)
-                CreateTempPlatform(TeleportPosition)  -- Create platform only for stages
+                CreateTempPlatform(TeleportPosition)  
                 Notify("Teleported to " .. StageName .. "!")
                 StagesCompleted = StagesCompleted + 1
                 CurrentStage = CurrentStage + 1
@@ -175,7 +174,7 @@ local function AutoFarm()
                 Notify("Waiting for player death and respawn...")
                 task.wait(10)  -- Initial 10-second delay after teleport
                 Player.CharacterRemoving:Wait() 
-                local newCharacter = Player.CharacterAdded:Wait()  -- Wait for respawn
+                local newCharacter = Player.CharacterAdded:Wait()  
                 task.wait(3)  -- Delay 3 seconds after respawn
                 if AutoFarmButton then
                     AutoFarmEnabled = true 
