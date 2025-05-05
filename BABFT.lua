@@ -168,14 +168,13 @@ local function AutoFarm()
             if TriggerPart then
                 local TeleportPosition = TriggerPart.Position + Vector3.new(0, 15, 0) 
                 Player.Character.HumanoidRootPart.CFrame = CFrame.new(TeleportPosition)
-                -- Platform is not created for GoldenChest
                 Notify("Teleported to GoldenChest Trigger!")
-                AutoFarmEnabled = false  -- Temporarily disable AutoFarm
+                AutoFarmEnabled = false 
                 Notify("Waiting for player death and respawn...")
-                task.wait(10)  -- Initial 10-second delay after teleport
+                task.wait(10)
                 Player.CharacterRemoving:Wait() 
                 local newCharacter = Player.CharacterAdded:Wait()  
-                task.wait(3)  -- Delay 3 seconds after respawn
+                task.wait(3)
                 if AutoFarmButton then
                     AutoFarmEnabled = true 
                     AutoFarmButton.Text = "AutoFarm: ON"
@@ -207,7 +206,6 @@ local function StartAutoFarmLoop()
     end
 end
 
--- Fly logic
 local function StartFlying()
     local Character = Player.Character
     if not Character or not Character:FindFirstChild("Humanoid") or not Character:FindFirstChild("HumanoidRootPart") then
@@ -233,7 +231,6 @@ local function StartFlying()
             local CameraCFrame = Camera.CFrame
             local MoveDirection = Vector3.new(0, 0, 0)
 
-            -- Movement based on camera direction
             if UserInputService:IsKeyDown(Enum.KeyCode.W) then
                 MoveDirection = MoveDirection + CameraCFrame.LookVector
             end
