@@ -9,14 +9,13 @@ local TextChatService = game:GetService("TextChatService")
 local Player = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Main GUI (BoatTeleportUI)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BoatTeleportUI"
 ScreenGui.Parent = Player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 200, 0, 290)
+Frame.Size = UDim2.new(0, 200, 0, 270)
 Frame.Position = UDim2.new(0, 10, 0, 10)
 Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Frame.BorderSizePixel = 0
@@ -27,7 +26,7 @@ Title.Size = UDim2.new(1, 0, 0, 30)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Text = '<font color="rgb(255,255,255)">Panel</font>'
+Title.Text = '<font color="rgb(255,255,255)">Panel </font><font color="rgb(255,255,255)">A</font><font color="rgb(0,191,255)">MM</font>'
 Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 18
 Title.RichText = true
@@ -103,18 +102,6 @@ GodModeButton.Font = Enum.Font.SourceSans
 GodModeButton.TextSize = 16
 GodModeButton.Parent = Frame
 
-local Footer = Instance.new("TextLabel")
-Footer.Size = UDim2.new(1, 0, 0, 20)
-Footer.Position = UDim2.new(0, 0, 0, 250)
-Footer.BackgroundTransparency = 1
-Footer.TextColor3 = Color3.fromRGB(255, 255, 255)
-Footer.Text = '<font color="rgb(255,255,255)">A</font><font color="rgb(0,170,255)">MM</font> Hub 2025'
-Footer.Font = Enum.Font.SourceSans
-Footer.TextSize = 14
-Footer.RichText = true
-Footer.Parent = Frame
-
--- Second GUI (Player List for Teleportation)
 local PlayerListGui = Instance.new("ScreenGui")
 PlayerListGui.Name = "PlayerListUI"
 PlayerListGui.Parent = Player:WaitForChild("PlayerGui")
@@ -241,7 +228,6 @@ local SuperRingEnabled = false
 local GodModeEnabled = false
 local godModeConnection = nil
 
--- Super Ring v4.1 Setup
 local Folder = Instance.new("Folder", Workspace)
 local Part = Instance.new("Part", Folder)
 local Attachment1 = Instance.new("Attachment", Part)
@@ -646,5 +632,4 @@ Player.CharacterAdded:Connect(function(character)
     end
 end)
 
--- Play initial sound
 playSound("2865227271")
